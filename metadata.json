@@ -1,0 +1,9 @@
+{
+  "name": "Princess Travel Consult",
+  "description": "Premium international recruitment and global mobility consultancy based in Ghana. Your best partner in international recruitment.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

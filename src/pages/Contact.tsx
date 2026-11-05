@@ -1,8 +1,44 @@
-import React from 'react';
-import { MapPin, Phone, Mail, Clock, Send, MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, Phone, Mail, Clock, Send, MessageSquare, CheckCircle, AlertCircle } from 'lucide-react';
+import { openWhatsApp } from '../lib/whatsapp';
 import { Button, SectionHeader, GlassCard } from '../components/UI';
 
+const EMPTY_FORM = { name: '', email: '', phone: '', subject: 'Job Inquiry', message: '' };
+
 export default function Contact() {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [feedback, setFeedback] = useState('');
+
+  const update = (field: keyof typeof EMPTY_FORM) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.email && !form.phone) {
+      setStatus('error');
+      setFeedback('Please add an email address or a phone number so we can reply.');
+      return;
+    }
+    setStatus('sending');
+    try {
+      const res = await fetch('/api/forms/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Something went wrong. Please try again or reach us on WhatsApp.');
+      setStatus('sent');
+      setFeedback(data.message || "Thank you! We'll get back to you shortly.");
+      setForm(EMPTY_FORM);
+    } catch (err: any) {
+      setStatus('error');
+      setFeedback(err.message || 'Something went wrong. Please try again or reach us on WhatsApp.');
+    }
+  };
+
   return (
     <div className="pt-32 min-h-screen">
       <section className="px-6 py-20">
@@ -44,20 +80,24 @@ export default function Contact() {
           <div className="grid lg:grid-cols-2 gap-16">
             <div className="glass-card p-8 md:p-12">
               <h3 className="text-3xl font-display font-bold mb-8">Send Us a Message</h3>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-white/40">Full Name</label>
-                    <input type="text" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="John Doe" />
+                    <input type="text" required maxLength={200} value={form.name} onChange={update('name')} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="John Doe" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-widest text-white/40">Email Address</label>
-                    <input type="email" className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="john@example.com" />
+                    <input type="email" maxLength={200} value={form.email} onChange={update('email')} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="john@example.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-white/40">Phone / WhatsApp <span className="normal-case tracking-normal font-normal">(optional)</span></label>
+                  <input type="tel" maxLength={50} value={form.phone} onChange={update('phone')} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="+233 55 000 0000" />
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-white/40">Subject</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors appearance-none">
+                  <select value={form.subject} onChange={update('subject')} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors appearance-none">
                     <option className="bg-charcoal">Job Inquiry</option>
                     <option className="bg-charcoal">Recruitment Partnership</option>
                     <option className="bg-charcoal">Travel Advisory</option>
@@ -66,9 +106,17 @@ export default function Contact() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold uppercase tracking-widest text-white/40">Message</label>
-                  <textarea rows={5} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="How can we help you?"></textarea>
+                  <textarea rows={5} required maxLength={5000} value={form.message} onChange={update('message')} className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 focus:outline-none focus:border-gold-primary transition-colors" placeholder="How can we help you?"></textarea>
                 </div>
-                <Button className="w-full" icon={Send}>Send Message</Button>
+                {status === 'sent' && (
+                  <p className="flex items-center gap-2 text-green-400 text-sm" role="status"><CheckCircle size={16} /> {feedback}</p>
+                )}
+                {status === 'error' && (
+                  <p className="flex items-center gap-2 text-red-400 text-sm" role="alert"><AlertCircle size={16} /> {feedback}</p>
+                )}
+                <Button type="submit" className="w-full" icon={Send} disabled={status === 'sending'}>
+                  {status === 'sending' ? 'Sending…' : 'Send Message'}
+                </Button>
               </form>
             </div>
 
@@ -103,7 +151,7 @@ export default function Contact() {
                 <Button 
                   variant="outline" 
                   className="w-full border-gold-primary text-gold-primary hover:bg-gold-primary hover:text-deep-black"
-                  onClick={() => window.open('https://wa.me/233554794957', '_blank')}
+                  onClick={() => openWhatsApp('contact_page')}
                 >
                   Chat on WhatsApp
                 </Button>

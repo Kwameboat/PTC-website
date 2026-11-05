@@ -11,7 +11,9 @@ import {
   Trash2,
   Save,
   LogOut,
-  Sparkles
+  Sparkles,
+  Inbox,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from './components/UI';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +29,34 @@ const AdminPanel = () => {
   const [heroSlides, setHeroSlides] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+  const [inquiries, setInquiries] = useState<any[]>([]);
+  const [waStats, setWaStats] = useState<any>(null);
+
+  const authHeaders = () => ({ Authorization: `Bearer ${sessionStorage.getItem('adminToken') ?? ''}` });
+
+  const signOut = () => {
+    sessionStorage.removeItem('adminToken');
+    setIsLoggedIn(false);
+  };
+
+  // Admin-only API call; an expired token sends the user back to the login form.
+  const adminFetch = async (url: string, init: RequestInit = {}) => {
+    const res = await fetch(url, { ...init, headers: { ...authHeaders(), ...(init.headers || {}) } });
+    if (res.status === 401) {
+      signOut();
+      setError('Your session expired. Please sign in again.');
+    }
+    return res;
+  };
+
+  const updateInquiryStatus = async (id: number, status: string) => {
+    const res = await adminFetch(`/api/admin/inquiries/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) setInquiries((list) => list.map((q) => (q.id === id ? { ...q, status } : q)));
+  };
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -41,6 +71,15 @@ const AdminPanel = () => {
       
       const resJobs = await fetch('/api/content/jobs');
       if (resJobs.ok) setJobs(await resJobs.json());
+
+      if (activeTab === 'inquiries') {
+        const [resInq, resWa] = await Promise.all([
+          adminFetch('/api/admin/inquiries'),
+          adminFetch('/api/admin/whatsapp-stats'),
+        ]);
+        if (resInq.ok) setInquiries(await resInq.json());
+        if (resWa.ok) setWaStats(await resWa.json());
+      }
     } catch (err) {
       console.error("Failed to fetch admin data", err);
     }
@@ -122,6 +161,7 @@ const AdminPanel = () => {
         <nav className="flex-1 space-y-2">
           {[
             { id: 'hero', label: 'Hero Slider', icon: ImageIcon },
+            { id: 'inquiries', label: 'Inquiries', icon: Inbox },
             { id: 'jobs', label: 'Job Listings', icon: Briefcase },
             { id: 'applications', label: 'Applications', icon: Users },
             { id: 'blog', label: 'Blog Posts', icon: FileText },
@@ -149,7 +189,7 @@ const AdminPanel = () => {
         </nav>
 
         <button 
-          onClick={() => { sessionStorage.removeItem('adminToken'); setIsLoggedIn(false); }}
+          onClick={signOut}
           className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all mt-auto"
         >
           <LogOut size={18} />
@@ -224,6 +264,70 @@ const AdminPanel = () => {
                 ))}
               </tbody>
             </table>
+          )}
+
+          {activeTab === 'inquiries' && (
+            <div>
+              {waStats && (
+                <div className="grid sm:grid-cols-3 gap-px bg-white/5 border-b border-white/5">
+                  {[
+                    { label: 'WhatsApp taps (7 days)', value: waStats.last_7_days },
+                    { label: 'WhatsApp taps (30 days)', value: waStats.last_30_days },
+                    { label: 'WhatsApp taps (all time)', value: waStats.total },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-deep-black p-6 flex items-center gap-4">
+                      <MessageCircle className="text-[#25D366]" size={22} />
+                      <div>
+                        <p className="text-2xl font-bold">{s.value}</p>
+                        <p className="text-xs uppercase tracking-widest text-white/40">{s.label}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {inquiries.length === 0 ? (
+                <p className="p-20 text-center text-white/30">No inquiries yet. Messages from the Contact page will appear here.</p>
+              ) : (
+                <table className="w-full text-left">
+                  <thead className="bg-white/5 text-xs uppercase tracking-widest text-white/50">
+                    <tr>
+                      <th className="px-6 py-4">Received</th>
+                      <th className="px-6 py-4">Contact</th>
+                      <th className="px-6 py-4">Message</th>
+                      <th className="px-6 py-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {inquiries.map((q) => (
+                      <tr key={q.id} className="hover:bg-white/5 transition-colors align-top">
+                        <td className="px-6 py-4 text-white/50 text-sm whitespace-nowrap">{new Date(q.created_at).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <p className="font-medium">{q.name}</p>
+                          {q.email && <a href={`mailto:${q.email}`} className="block text-gold-primary hover:underline">{q.email}</a>}
+                          {q.phone && <a href={`tel:${q.phone}`} className="block text-white/50">{q.phone}</a>}
+                        </td>
+                        <td className="px-6 py-4 text-sm max-w-md">
+                          <p className="text-xs uppercase tracking-widest text-gold-primary mb-1">{q.subject}</p>
+                          <p className="text-white/70 whitespace-pre-line">{q.message}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <select
+                            value={q.status}
+                            onChange={(e) => updateInquiryStatus(q.id, e.target.value)}
+                            className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-sm capitalize"
+                          >
+                            {['new', 'contacted', 'qualified', 'won', 'lost'].map((st) => (
+                              <option key={st} value={st} className="bg-charcoal">{st}</option>
+                            ))}
+                          </select>
+                          {q.crm_synced_at && <p className="text-[10px] text-white/30 mt-1">Sent to CRM</p>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           )}
 
           {(activeTab === 'applications' || activeTab === 'blog' || activeTab === 'settings') && (

@@ -9,3 +9,5 @@ coverage/
 
 # Local SQLite database used when TURSO_DATABASE_URL is not set
 cms.db*
+# Local Postgres (PGlite) used when DATABASE_URL is not set
+.pgdata/

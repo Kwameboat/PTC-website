@@ -2,7 +2,19 @@ import crypto from 'crypto';
 
 // Database: Postgres on Supabase in production (DATABASE_URL), or an in-process
 // Postgres (PGlite, stored in ./.pgdata) for local development. Same SQL for both.
-const DATABASE_URL = process.env.DATABASE_URL;
+// Prisma-only options (e.g. ?pgbouncer=true from Supabase's ORM tab) would be sent to
+// Postgres as unknown settings and fail the connection, so drop them.
+const DATABASE_URL = (() => {
+  const raw = process.env.DATABASE_URL?.trim().replace(/^["']|["']$/g, '');
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    for (const p of ['pgbouncer', 'connection_limit', 'pool_timeout', 'schema']) u.searchParams.delete(p);
+    return u.toString();
+  } catch {
+    return raw;
+  }
+})();
 
 let backendPromise = null;
 

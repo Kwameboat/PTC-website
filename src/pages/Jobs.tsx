@@ -3,23 +3,15 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Search, MapPin, Briefcase, Building2, Filter, ArrowRight } from 'lucide-react';
 import { Button, SectionHeader } from '../components/UI';
-
-const JOBS = [
-  { id: 1, title: "Senior Software Engineer", country: "Germany", industry: "Tech", type: "Full-time", salary: "€70k - €90k", posted: "2 days ago" },
-  { id: 2, title: "Registered Nurse", country: "United Kingdom", industry: "Healthcare", type: "Contract", salary: "£35k - £45k", posted: "1 week ago" },
-  { id: 3, title: "Hospitality Manager", country: "Dubai, UAE", industry: "Tourism", type: "Full-time", salary: "$4k - $6k /mo", posted: "3 days ago" },
-  { id: 4, title: "Civil Engineer", country: "Canada", industry: "Construction", type: "Full-time", salary: "$80k - $100k", posted: "5 days ago" },
-  { id: 5, title: "Customer Service Lead", country: "Poland", industry: "Business", type: "Full-time", salary: "6k - 8k PLN", posted: "1 day ago" },
-  { id: 6, title: "Data Analyst", country: "Netherlands", industry: "Tech", type: "Full-time", salary: "€50k - €65k", posted: "4 days ago" },
-];
+import { useJobs, postedAgo } from '../lib/jobs';
 
 export default function Jobs() {
   const [searchTerm, setSearchTerm] = useState('');
+  const { jobs, loading } = useJobs();
 
-  const filteredJobs = JOBS.filter(job => 
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.industry.toLowerCase().includes(searchTerm.toLowerCase())
+  const term = searchTerm.trim().toLowerCase();
+  const filteredJobs = jobs.filter((job) =>
+    [job.title, job.country, job.industry, job.job_type].some((v) => (v ?? '').toLowerCase().includes(term)),
   );
 
   return (
@@ -70,22 +62,34 @@ export default function Jobs() {
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/50">
                       <span className="flex items-center gap-1.5"><MapPin size={16} className="text-gold-primary" /> {job.country}</span>
                       <span className="flex items-center gap-1.5"><Briefcase size={16} className="text-gold-primary" /> {job.industry}</span>
-                      <span className="px-3 py-1 bg-white/5 rounded-full text-xs font-bold text-white/70 tracking-wider uppercase">{job.type}</span>
+                      {job.job_type && <span className="px-3 py-1 bg-white/5 rounded-full text-xs font-bold text-white/70 tracking-wider uppercase">{job.job_type}</span>}
                     </div>
+                    {job.description && <p className="text-white/50 text-sm mt-3 max-w-2xl line-clamp-2">{job.description}</p>}
+                    {job.deadline && <p className="text-xs text-white/30 mt-2 uppercase tracking-widest">Apply by {job.deadline}</p>}
                   </div>
                 </div>
                 
                 <div className="mt-5 lg:mt-0 flex items-center justify-between lg:justify-end gap-4 sm:gap-12 border-t lg:border-t-0 border-white/5 pt-5 lg:pt-0">
                   <div className="text-left lg:text-right">
                     <p className="text-lg sm:text-xl font-bold text-gold-primary whitespace-nowrap">{job.salary}</p>
-                    <p className="text-xs text-white/30 uppercase tracking-widest mt-1">Posted {job.posted}</p>
+                    <p className="text-xs text-white/30 uppercase tracking-widest mt-1">Posted {postedAgo(job.created_at)}</p>
                   </div>
                   <Link to="/contact"><Button icon={ArrowRight} className="whitespace-nowrap px-5! sm:px-8!">Apply Now</Button></Link>
                 </div>
               </motion.div>
             ))}
             
-            {filteredJobs.length === 0 && (
+            {loading && (
+              <div className="text-center py-20 glass-card text-white/40">Loading openings…</div>
+            )}
+
+            {!loading && jobs.length === 0 && (
+              <div className="text-center py-20 glass-card">
+                <p className="text-white/50 text-lg">No openings right now. Check back soon, or send us your CV.</p>
+              </div>
+            )}
+
+            {!loading && jobs.length > 0 && filteredJobs.length === 0 && (
               <div className="text-center py-20 glass-card">
                 <p className="text-white/50 text-lg">No jobs found matching your search criteria.</p>
                 <button onClick={() => setSearchTerm('')} className="text-gold-primary font-bold mt-4 hover:underline">Clear all filters</button>

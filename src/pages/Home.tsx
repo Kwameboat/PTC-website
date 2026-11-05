@@ -14,6 +14,7 @@ import {
 import { HeroSlider } from '../components/HeroSlider';
 import { Button, SectionHeader, GlassCard } from '../components/UI';
 import { FutureBridge3D } from '../components/FutureBridge3D';
+import { useJobs } from '../lib/jobs';
 
 const StatsSection = () => (
   <section className="section-padding bg-charcoal">
@@ -81,7 +82,11 @@ const ServicesSection = () => (
   </section>
 );
 
-const JobsSection = () => (
+const JobsSection = () => {
+  const { jobs } = useJobs();
+  const featured = jobs.slice(0, 3);
+  if (!featured.length) return null;
+  return (
   <section className="section-padding bg-charcoal/50">
     <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12">
@@ -93,13 +98,9 @@ const JobsSection = () => (
       </div>
 
       <div className="space-y-4">
-        {[
-          { title: "Senior Software Engineer", country: "Germany", industry: "Tech", type: "Full-time" },
-          { title: "Registered Nurse", country: "United Kingdom", industry: "Healthcare", type: "Contract" },
-          { title: "Hospitality Manager", country: "Dubai, UAE", industry: "Tourism", type: "Full-time" }
-        ].map((job, i) => (
+        {featured.map((job, i) => (
           <motion.div
-            key={i}
+            key={job.id}
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -119,7 +120,7 @@ const JobsSection = () => (
               </div>
             </div>
             <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
-              <span className="text-gold-primary font-medium">{job.type}</span>
+              <span className="text-gold-primary font-medium">{job.job_type}</span>
               <Link to="/contact"><Button size="sm" className="whitespace-nowrap">Apply Now</Button></Link>
             </div>
           </motion.div>
@@ -127,7 +128,8 @@ const JobsSection = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default function Home() {
   return (

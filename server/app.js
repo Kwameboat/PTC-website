@@ -1,6 +1,6 @@
 import express from "express";
 import crypto from "crypto";
-import { query, ensureDb, verifyPassword } from "./db.js";
+import { query, ensureDb, verifyPassword, hashPassword } from "./db.js";
 import { crmEnabled, sendToCrm } from "./crm.js";
 
 // Shared by server.ts (local dev / `npm start`) and api/index.js (Vercel function).
@@ -75,6 +75,7 @@ function requireAdmin(req, res, next) {
     valid = false;
   }
   if (!valid) return res.status(401).json({ success: false, message: "Please sign in again" });
+  req.admin = JSON.parse(Buffer.from(payload, "base64url").toString()).u;
   next();
 }
 
@@ -88,8 +89,10 @@ app.get("/api/content/services", wrap(async (_req, res) => {
   res.json(await query("SELECT * FROM services ORDER BY order_index ASC"));
 }));
 
+const PUBLIC_JOB_COLUMNS = "id, title, country, industry, job_type, salary, description, requirements, deadline, created_at";
+
 app.get("/api/content/jobs", wrap(async (_req, res) => {
-  res.json(await query("SELECT * FROM jobs WHERE status = 'open'"));
+  res.json(await query(`SELECT ${PUBLIC_JOB_COLUMNS} FROM jobs WHERE status = 'open' ORDER BY created_at DESC, id DESC`));
 }));
 
 app.get("/api/content/testimonials", wrap(async (_req, res) => {
@@ -202,6 +205,127 @@ app.get("/api/admin/whatsapp-stats", requireAdmin, wrap(async (_req, res) => {
   res.json({ ...totals, by_source: bySource });
 }));
 
+// --- Admin content editing (jobs, hero slides) ---
+// Each resource lists the only columns the admin may write; values are trimmed text
+// (or integers where noted), so nothing else in the request reaches the database.
+const RESOURCES = {
+  jobs: {
+    table: "jobs",
+    order: "created_at DESC, id DESC",
+    fields: {
+      title: { required: true, max: 200 },
+      country: { max: 120 },
+      industry: { max: 120 },
+      job_type: { max: 60 },
+      salary: { max: 120 },
+      deadline: { max: 60 },
+      description: { max: 5000 },
+      requirements: { max: 5000 },
+      status: { oneOf: ["open", "closed"], default: "open" },
+    },
+  },
+  "hero-slides": {
+    table: "hero_slides",
+    order: "order_index ASC, id ASC",
+    fields: {
+      title: { required: true, max: 200 },
+      subtitle: { max: 600 },
+      video_url: { max: 1000, url: true },
+      cta_text: { max: 60 },
+      cta_link: { max: 300 },
+      order_index: { int: true, default: 0 },
+    },
+  },
+};
+
+function cleanFields(spec, body, { partial }) {
+  const out = {};
+  for (const [key, rule] of Object.entries(spec.fields)) {
+    if (!(key in body)) {
+      if (!partial && rule.default !== undefined) out[key] = rule.default;
+      if (!partial && rule.required) throw Object.assign(new Error(`${key} is required`), { status: 400 });
+      continue;
+    }
+    let v = body[key];
+    if (rule.int) {
+      v = v === "" || v == null ? rule.default ?? null : Number.parseInt(v, 10);
+      if (v !== null && !Number.isFinite(v)) throw Object.assign(new Error(`${key} must be a number`), { status: 400 });
+    } else {
+      v = text(v, rule.max);
+      if (rule.oneOf && !rule.oneOf.includes(v)) throw Object.assign(new Error(`${key} must be one of ${rule.oneOf.join(", ")}`), { status: 400 });
+      if (rule.url && v && !/^https?:\/\//i.test(v)) throw Object.assign(new Error(`${key} must start with http:// or https://`), { status: 400 });
+    }
+    if (rule.required && !v) throw Object.assign(new Error(`${key} is required`), { status: 400 });
+    out[key] = v;
+  }
+  return out;
+}
+
+function resourceFor(req, res) {
+  const spec = RESOURCES[req.params.resource];
+  if (!spec) res.status(404).json({ message: "Not found" });
+  return spec;
+}
+
+app.get("/api/admin/:resource(jobs|hero-slides)", requireAdmin, wrap(async (req, res) => {
+  const spec = resourceFor(req, res);
+  res.json(await query(`SELECT * FROM ${spec.table} ORDER BY ${spec.order}`));
+}));
+
+app.post("/api/admin/:resource(jobs|hero-slides)", requireAdmin, wrap(async (req, res) => {
+  const spec = resourceFor(req, res);
+  const data = cleanFields(spec, req.body ?? {}, { partial: false });
+  const cols = Object.keys(data);
+  const [row] = await query(
+    `INSERT INTO ${spec.table} (${cols.join(", ")}) VALUES (${cols.map((_, i) => "$" + (i + 1)).join(", ")}) RETURNING *`,
+    cols.map((c) => data[c]),
+  );
+  res.status(201).json(row);
+}));
+
+app.put("/api/admin/:resource(jobs|hero-slides)/:id", requireAdmin, wrap(async (req, res) => {
+  const spec = resourceFor(req, res);
+  const data = cleanFields(spec, req.body ?? {}, { partial: true });
+  const cols = Object.keys(data);
+  if (!cols.length) return res.status(400).json({ message: "Nothing to update" });
+  const rows = await query(
+    `UPDATE ${spec.table} SET ${cols.map((c, i) => `${c} = $${i + 1}`).join(", ")} WHERE id = $${cols.length + 1} RETURNING *`,
+    [...cols.map((c) => data[c]), Number(req.params.id)],
+  );
+  if (!rows.length) return res.status(404).json({ message: "Not found" });
+  res.json(rows[0]);
+}));
+
+app.delete("/api/admin/:resource(jobs|hero-slides|inquiries)/:id", requireAdmin, wrap(async (req, res) => {
+  const table = { jobs: "jobs", "hero-slides": "hero_slides", inquiries: "inquiries" }[req.params.resource];
+  const rows = await query(`DELETE FROM ${table} WHERE id = $1 RETURNING id`, [Number(req.params.id)]);
+  if (!rows.length) return res.status(404).json({ message: "Not found" });
+  res.status(204).end();
+}));
+
+// --- Admin account ---
+
+app.post("/api/admin/change-password", requireAdmin, wrap(async (req, res) => {
+  const { currentPassword, newPassword, newUsername } = req.body ?? {};
+  const [user] = await query("SELECT id, username, password_hash FROM users WHERE username = $1", [req.admin]);
+  if (!user || !verifyPassword(currentPassword ?? "", user.password_hash)) {
+    return res.status(400).json({ message: "Your current password is not correct." });
+  }
+  const pw = String(newPassword ?? "");
+  if (pw.length < 10) return res.status(400).json({ message: "Use at least 10 characters for the new password." });
+  if (pw === currentPassword) return res.status(400).json({ message: "The new password must be different from the current one." });
+  const name = text(newUsername, 60) || user.username;
+  if (!/^[\w.@-]{3,60}$/.test(name)) return res.status(400).json({ message: "Usernames can use letters, numbers, dots, dashes, @ and _ (3–60 characters)." });
+  try {
+    await query("UPDATE users SET username = $1, password_hash = $2 WHERE id = $3", [name, hashPassword(pw), user.id]);
+  } catch (err) {
+    if (err?.code === "23505") return res.status(400).json({ message: "That username is already taken." });
+    throw err;
+  }
+  // Return a fresh token for the (possibly renamed) account.
+  res.json({ success: true, username: name, token: makeToken(name) });
+}));
+
 app.post("/api/admin/save-logo", requireAdmin, wrap(async (req, res) => {
   const { image } = req.body ?? {};
   if (typeof image !== "string" || !/^data:image\/[\w.+-]+;base64,/.test(image)) {
@@ -217,6 +341,7 @@ app.post("/api/admin/save-logo", requireAdmin, wrap(async (req, res) => {
 app.use("/api", (_req, res) => res.status(404).json({ message: "Not found" }));
 
 app.use((err, _req, res, _next) => {
+  if (err?.status === 400) return res.status(400).json({ message: err.message });
   console.error(err);
   res.status(500).json({ message: "Server error" });
 });

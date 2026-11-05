@@ -121,6 +121,10 @@ const SCHEMA = `
     deadline TEXT,
     status TEXT DEFAULT 'open'
   );
+  ALTER TABLE jobs ADD COLUMN IF NOT EXISTS job_type TEXT;
+  ALTER TABLE jobs ADD COLUMN IF NOT EXISTS salary TEXT;
+  ALTER TABLE jobs ADD COLUMN IF NOT EXISTS description TEXT;
+  ALTER TABLE jobs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
   CREATE TABLE IF NOT EXISTS testimonials (
     id SERIAL PRIMARY KEY,
@@ -202,6 +206,16 @@ const SEED_SLIDES = [
     '/recruit',
     3,
   ],
+];
+
+// The job openings the site launched with; added once so the Jobs page isn't empty.
+const SEED_JOBS = [
+  ['Senior Software Engineer', 'Germany', 'Tech', 'Full-time', '€70k - €90k', 2],
+  ['Registered Nurse', 'United Kingdom', 'Healthcare', 'Contract', '£35k - £45k', 7],
+  ['Hospitality Manager', 'Dubai, UAE', 'Tourism', 'Full-time', '$4k - $6k /mo', 3],
+  ['Civil Engineer', 'Canada', 'Construction', 'Full-time', '$80k - $100k', 5],
+  ['Customer Service Lead', 'Poland', 'Business', 'Full-time', '6k - 8k PLN', 1],
+  ['Data Analyst', 'Netherlands', 'Tech', 'Full-time', '€50k - €65k', 4],
 ];
 
 // Columns copied from the old Turso database (ids are regenerated).
@@ -294,6 +308,20 @@ async function init() {
         process.env.ADMIN_USERNAME || 'admin',
         hashPassword(process.env.ADMIN_PASSWORD || 'admin123'),
       ]);
+    }
+
+    // Seed jobs once; if the admin later deletes them all, they stay deleted.
+    const jobsSeeded = await t.query("SELECT 1 FROM settings WHERE key = 'jobs_seeded'");
+    if (!jobsSeeded.length) {
+      if ((await count(t, 'jobs')) === 0) {
+        for (const [title, country, industry, jobType, salary, daysAgo] of SEED_JOBS) {
+          await t.query(
+            "INSERT INTO jobs (title, country, industry, job_type, salary, status, created_at) VALUES ($1, $2, $3, $4, $5, 'open', now() - make_interval(days => $6))",
+            [title, country, industry, jobType, salary, daysAgo],
+          );
+        }
+      }
+      await t.query("INSERT INTO settings (key, value) VALUES ('jobs_seeded', 'true') ON CONFLICT (key) DO NOTHING");
     }
 
     if ((await count(t, 'hero_slides')) === 0) {

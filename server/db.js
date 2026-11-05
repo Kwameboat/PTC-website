@@ -1,11 +1,28 @@
-import { createClient } from '@libsql/client';
-
 // On Vercel, TURSO_DATABASE_URL / TURSO_AUTH_TOKEN point at a hosted Turso database.
 // Locally (no env vars) it falls back to a SQLite file, cms.db.
-export const db = createClient({
-  url: process.env.TURSO_DATABASE_URL || 'file:cms.db',
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+const url = process.env.TURSO_DATABASE_URL || 'file:cms.db';
+
+let clientPromise = null;
+
+// Remote databases use the pure-JS web client (no native module, so nothing to break
+// in Vercel's function bundle); only local files load the native SQLite client.
+function getClient() {
+  if (!clientPromise) {
+    if (process.env.VERCEL && url.startsWith('file:')) {
+      return Promise.reject(new Error('TURSO_DATABASE_URL is not set for this Vercel environment'));
+    }
+    clientPromise = (url.startsWith('file:') ? import('@libsql/client') : import('@libsql/client/web'))
+      .then(({ createClient }) => createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN }))
+      .catch((err) => { clientPromise = null; throw err; });
+  }
+  return clientPromise;
+}
+
+export const db = {
+  execute: async (stmt) => (await getClient()).execute(stmt),
+  batch: async (stmts, mode) => (await getClient()).batch(stmts, mode),
+  executeMultiple: async (sql) => (await getClient()).executeMultiple(sql),
+};
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (

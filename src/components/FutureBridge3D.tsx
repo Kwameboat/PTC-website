@@ -1,5 +1,5 @@
 import React, { useRef, Suspense, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Float, Stars, PerspectiveCamera, MeshDistortMaterial, Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -35,6 +35,19 @@ const ParticleField = ({ count = 1000 }) => {
       />
     </Points>
   );
+};
+
+// Pulls the camera back on tall, narrow screens (phones) so the rings always fit the width.
+const FitCamera = () => {
+  const { camera, size } = useThree();
+  React.useEffect(() => {
+    const aspect = size.width / size.height;
+    const needWidth = 6; // world units the core + rings need across
+    const halfFov = ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 360;
+    camera.position.z = Math.max(8, needWidth / (2 * Math.tan(halfFov) * aspect));
+    camera.updateProjectionMatrix();
+  }, [camera, size.width, size.height]);
+  return null;
 };
 
 const AbstractCore = () => {
@@ -101,6 +114,7 @@ export const FutureBridge3D = () => {
         <pointLight position={[10, 10, 10]} intensity={2} color="#d4af37" />
         <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={1} color="#ffffff" />
         
+        <FitCamera />
         <Suspense fallback={null}>
           <AbstractCore />
           <ParticleField count={3500} />

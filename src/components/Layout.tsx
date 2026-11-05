@@ -1,51 +1,147 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { openWhatsApp } from '../lib/whatsapp';
-import { motion } from 'motion/react';
-import { MapPin, Clock, Users } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Clock, Users, Menu, X, MessageCircle, ArrowRight } from 'lucide-react';
 import { Button } from './UI';
+
+const NAV_LINKS = [
+  { to: '/', label: 'Home' },
+  { to: '/recruitment', label: 'Recruitment' },
+  { to: '/travel', label: 'Travel' },
+  { to: '/jobs', label: 'Jobs' },
+  { to: '/about', label: 'About' },
+];
 
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close the menu when the page changes, and stop the page scrolling behind it.
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  const solid = scrolled || menuOpen;
+
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-deep-black/80 backdrop-blur-md py-4' : 'bg-transparent py-8'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-3 group" aria-label="Princess Travel Consult home">
-          <img src="/logo-mark-160.png" alt="" width={48} height={48} className={`rounded-full shadow-lg shadow-gold-primary/10 transition-all duration-500 ${scrolled ? 'w-10 h-10' : 'w-12 h-12'}`} />
-          <span className="flex flex-col">
-          <span className="text-xl font-display font-bold tracking-tighter leading-none group-hover:text-gold-primary transition-colors">PRINCESS</span>
-          <span className="text-xs font-bold tracking-[0.3em] text-gold-primary leading-none shimmer-text">TRAVEL CONSULT</span>
+    <>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${solid ? 'bg-deep-black/90 backdrop-blur-md py-3 lg:py-4' : 'bg-transparent py-4 sm:py-6 lg:py-8'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center gap-4">
+        <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group min-w-0" aria-label="Princess Travel Consult home">
+          <img src="/logo-mark-160.png" alt="" width={48} height={48} className={`shrink-0 rounded-full shadow-lg shadow-gold-primary/10 transition-all duration-500 ${solid ? 'w-9 h-9 sm:w-10 sm:h-10' : 'w-10 h-10 sm:w-12 sm:h-12'}`} />
+          <span className="flex flex-col min-w-0">
+            <span className="text-lg sm:text-xl font-display font-bold tracking-tighter leading-none group-hover:text-gold-primary transition-colors">PRINCESS</span>
+            <span className="text-[10px] sm:text-xs font-bold tracking-[0.2em] sm:tracking-[0.3em] text-gold-primary leading-none shimmer-text whitespace-nowrap">TRAVEL CONSULT</span>
           </span>
         </Link>
-        
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium uppercase tracking-widest">
-          <Link to="/" className="hover:text-gold-primary transition-colors">Home</Link>
-          <Link to="/recruitment" className="hover:text-gold-primary transition-colors">Recruitment</Link>
-          <Link to="/travel" className="hover:text-gold-primary transition-colors">Travel</Link>
-          <Link to="/jobs" className="hover:text-gold-primary transition-colors">Jobs</Link>
-          <Link to="/about" className="hover:text-gold-primary transition-colors">About</Link>
+
+        <div className="hidden lg:flex items-center gap-8 text-sm font-medium uppercase tracking-widest">
+          {NAV_LINKS.map((l) => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.to === '/'}
+              className={({ isActive }) => `transition-colors hover:text-gold-primary ${isActive ? 'text-gold-primary' : ''}`}
+            >
+              {l.label}
+            </NavLink>
+          ))}
         </div>
 
-        <Link to="/contact">
-          <Button size="sm">Contact Us</Button>
-        </Link>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <Link to="/contact" className="hidden sm:block">
+            <Button size="sm">Contact Us</Button>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            className="lg:hidden w-11 h-11 rounded-full border border-white/15 flex items-center justify-center hover:border-gold-primary hover:text-gold-primary transition-colors"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
+
     </nav>
+
+      {/* Phone / tablet menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            id="mobile-menu"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.2 }}
+            className="lg:hidden fixed inset-0 z-40 bg-deep-black pt-[4.25rem] overflow-y-auto overscroll-contain"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col min-h-full">
+              <ul className="flex flex-col">
+                {NAV_LINKS.map((l, i) => (
+                  <motion.li
+                    key={l.to}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.04 * i }}
+                  >
+                    <NavLink
+                      to={l.to}
+                      end={l.to === '/'}
+                      className={({ isActive }) => `flex items-center justify-between py-4 border-b border-white/5 text-2xl sm:text-3xl font-display font-bold ${isActive ? 'text-gold-primary' : 'text-white'}`}
+                    >
+                      {l.label}
+                      <ArrowRight size={20} className="text-white/30" />
+                    </NavLink>
+                  </motion.li>
+                ))}
+              </ul>
+              <div className="mt-8 grid sm:grid-cols-2 gap-3 pb-8">
+                <Link to="/contact" className="block">
+                  <Button className="w-full">Contact Us</Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  icon={MessageCircle}
+                  onClick={() => openWhatsApp('mobile_menu')}
+                >
+                  WhatsApp Us
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
 export const Footer = () => (
-  <footer className="bg-deep-black pt-20 pb-10 border-t border-white/5">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="grid md:grid-cols-4 gap-12 mb-20">
-        <div className="col-span-2">
+  <footer className="bg-deep-black pt-16 md:pt-20 pb-28 md:pb-10 border-t border-white/5">
+    <div className="max-w-7xl mx-auto px-5 sm:px-6">
+      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-10 md:gap-12 mb-14 md:mb-20">
+        <div className="sm:col-span-2">
           <Link to="/" className="flex items-center gap-4 mb-6 group" aria-label="Princess Travel Consult home">
             <img src="/logo-mark-160.png" alt="" width={64} height={64} className="w-16 h-16 rounded-full" />
             <span className="flex flex-col">
@@ -67,11 +163,12 @@ export const Footer = () => (
         
         <div>
           <h4 className="font-bold mb-6 uppercase tracking-widest text-sm text-gold-primary">Quick Links</h4>
-          <ul className="space-y-4 text-white/50 text-sm">
-            <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
-            <li><Link to="/recruitment" className="hover:text-white transition-colors">Recruitment Services</Link></li>
-            <li><Link to="/travel" className="hover:text-white transition-colors">Travel Advisory</Link></li>
-            <li><Link to="/jobs" className="hover:text-white transition-colors">Job Portal</Link></li>
+          <ul className="space-y-1 text-white/50 text-sm">
+            <li><Link to="/about" className="inline-block py-2 hover:text-white transition-colors">About Us</Link></li>
+            <li><Link to="/recruitment" className="inline-block py-2 hover:text-white transition-colors">Recruitment Services</Link></li>
+            <li><Link to="/travel" className="inline-block py-2 hover:text-white transition-colors">Travel Advisory</Link></li>
+            <li><Link to="/jobs" className="inline-block py-2 hover:text-white transition-colors">Job Portal</Link></li>
+            <li><Link to="/contact" className="inline-block py-2 hover:text-white transition-colors">Contact Us</Link></li>
           </ul>
         </div>
 
@@ -79,17 +176,17 @@ export const Footer = () => (
           <h4 className="font-bold mb-6 uppercase tracking-widest text-sm text-gold-primary">Contact</h4>
           <ul className="space-y-4 text-white/50 text-sm">
             <li className="flex items-center gap-3"><Clock size={18} className="text-gold-primary shrink-0" /> Mon - Fri: 9am - 5pm</li>
-            <li className="flex items-center gap-3"><Users size={18} className="text-gold-primary shrink-0" /> info@princesstravel.com</li>
-            <li className="flex items-center gap-3"><span className="text-gold-primary font-bold">Tel/WhatsApp:</span> +233 55 479 4957</li>
+            <li className="flex items-center gap-3"><Users size={18} className="text-gold-primary shrink-0" /> <a href="mailto:info@princesstravel.com" className="inline-block py-2 break-all hover:text-white transition-colors">info@princesstravel.com</a></li>
+            <li className="flex flex-wrap items-center gap-x-3 gap-y-1"><span className="text-gold-primary font-bold">Tel/WhatsApp:</span> <a href="tel:+233554794957" className="inline-block py-2 whitespace-nowrap hover:text-white transition-colors">+233 55 479 4957</a></li>
           </ul>
         </div>
       </div>
       
-      <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/30 uppercase tracking-widest">
+      <div className="pt-8 md:pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/30 uppercase tracking-widest text-center md:text-left">
         <p>© 2026 Princess Travel Consult. All Rights Reserved.</p>
-        <div className="flex gap-8">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
+        <div className="flex gap-6 sm:gap-8">
+          <a href="#" className="py-2">Privacy Policy</a>
+          <a href="#" className="py-2">Terms of Service</a>
         </div>
       </div>
     </div>
@@ -97,6 +194,11 @@ export const Footer = () => (
 );
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -104,7 +206,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <Footer />
       
       {/* Floating CTA */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4">
+      <div className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-4 sm:right-6 md:bottom-8 md:right-8 z-30 flex flex-col gap-4">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}

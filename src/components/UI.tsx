@@ -17,7 +17,7 @@ export const Button = ({
   className = '', 
   ...props 
 }: ButtonProps) => {
-  const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-300 rounded-full focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "inline-flex items-center justify-center text-center font-medium transition-all duration-300 rounded-full focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
     primary: "gold-gradient text-deep-black hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]",
@@ -54,12 +54,12 @@ export const SectionHeader = ({
   subtitle?: string; 
   centered?: boolean 
 }) => (
-  <div className={`mb-12 ${centered ? 'text-center' : ''}`}>
+  <div className={`mb-8 md:mb-12 ${centered ? 'text-center' : ''}`}>
     <motion.span 
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-gold-primary uppercase tracking-[0.2em] text-sm font-bold mb-4 block"
+      className="text-gold-primary uppercase tracking-[0.2em] text-xs sm:text-sm font-bold mb-3 sm:mb-4 block"
     >
       {subtitle}
     </motion.span>
@@ -68,7 +68,7 @@ export const SectionHeader = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: 0.1 }}
-      className="text-4xl md:text-5xl lg:text-6xl font-display leading-tight"
+      className="text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl font-display leading-tight"
     >
       {title}
     </motion.h2>
@@ -86,7 +86,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 }) => (
   <motion.div
     whileHover={{ y: -10 }}
-    className={`glass-card p-8 transition-all duration-500 hover:border-gold-primary/30 ${className}`}
+    className={`glass-card p-6 sm:p-8 transition-all duration-500 hover:border-gold-primary/30 ${className}`}
   >
     {children}
   </motion.div>

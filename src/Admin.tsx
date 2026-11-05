@@ -148,17 +148,21 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="min-h-screen bg-deep-black flex">
+    <div className="min-h-screen bg-deep-black flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-white/5 p-6 flex flex-col">
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-8 h-8 gold-gradient rounded flex items-center justify-center">
-            <span className="text-deep-black font-bold">P</span>
+      <aside className="md:w-64 md:shrink-0 border-b md:border-b-0 md:border-r border-white/5 p-4 md:p-6 flex flex-col md:sticky md:top-0 md:h-screen bg-deep-black">
+        <div className="flex items-center justify-between md:justify-start gap-3 mb-4 md:mb-10">
+          <div className="flex items-center gap-3">
+            <img src="/logo-mark-160.png" alt="" className="w-8 h-8 rounded-full" />
+            <span className="font-display font-bold">CMS ADMIN</span>
           </div>
-          <span className="font-display font-bold">CMS ADMIN</span>
+          <button onClick={signOut} className="md:hidden flex items-center gap-2 px-3 py-2 text-red-500 hover:bg-red-500/10 rounded-xl text-sm">
+            <LogOut size={16} /> Sign Out
+          </button>
         </div>
 
-        <nav className="flex-1 space-y-2">
+        {/* Phones: a scrollable row of tabs. Desktop: the sidebar list. */}
+        <nav className="flex md:flex-col md:flex-1 gap-2 md:gap-0 md:space-y-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 pb-1 md:pb-0">
           {[
             { id: 'hero', label: 'Hero Slider', icon: ImageIcon },
             { id: 'inquiries', label: 'Inquiries', icon: Inbox },
@@ -170,17 +174,17 @@ const AdminPanel = () => {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-gold-primary text-deep-black font-bold' : 'text-white/50 hover:bg-white/5'}`}
+              className={`shrink-0 md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl whitespace-nowrap transition-all ${activeTab === item.id ? 'bg-gold-primary text-deep-black font-bold' : 'text-white/50 hover:bg-white/5'}`}
             >
               <item.icon size={18} />
               <span className="text-sm">{item.label}</span>
             </button>
           ))}
 
-          <div className="pt-4 mt-4 border-t border-white/5">
+          <div className="shrink-0 md:pt-4 md:mt-4 md:border-t border-white/5">
             <button
               onClick={() => navigate('/enhance-logo')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gold-primary hover:bg-gold-primary/10 transition-all"
+              className="md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl whitespace-nowrap text-gold-primary hover:bg-gold-primary/10 transition-all"
             >
               <Sparkles size={18} />
               <span className="text-sm font-bold">Logo Enhancer</span>
@@ -190,7 +194,7 @@ const AdminPanel = () => {
 
         <button 
           onClick={signOut}
-          className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all mt-auto"
+          className="hidden md:flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all mt-auto"
         >
           <LogOut size={18} />
           <span className="text-sm">Sign Out</span>
@@ -198,18 +202,18 @@ const AdminPanel = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto">
-        <header className="flex justify-between items-center mb-10">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-10">
+        <header className="flex flex-wrap gap-4 justify-between items-start sm:items-center mb-6 md:mb-10">
           <div>
-            <h2 className="text-3xl font-display font-bold capitalize">{activeTab.replace('-', ' ')}</h2>
+            <h2 className="text-2xl md:text-3xl font-display font-bold capitalize">{activeTab.replace('-', ' ')}</h2>
             <p className="text-white/50 text-sm">Manage your website content here.</p>
           </div>
           <Button icon={Plus} size="sm">Add New</Button>
         </header>
 
-        <div className="glass-card overflow-hidden">
+        <div className="glass-card overflow-x-auto">
           {activeTab === 'hero' && (
-            <table className="w-full text-left">
+            <table className="w-full min-w-[640px] text-left">
               <thead className="bg-white/5 text-xs uppercase tracking-widest text-white/50">
                 <tr>
                   <th className="px-6 py-4">Order</th>
@@ -237,7 +241,7 @@ const AdminPanel = () => {
           )}
 
           {activeTab === 'jobs' && (
-            <table className="w-full text-left">
+            <table className="w-full min-w-[640px] text-left">
               <thead className="bg-white/5 text-xs uppercase tracking-widest text-white/50">
                 <tr>
                   <th className="px-6 py-4">Title</th>
@@ -288,7 +292,7 @@ const AdminPanel = () => {
               {inquiries.length === 0 ? (
                 <p className="p-20 text-center text-white/30">No inquiries yet. Messages from the Contact page will appear here.</p>
               ) : (
-                <table className="w-full text-left">
+                <table className="w-full min-w-[640px] text-left">
                   <thead className="bg-white/5 text-xs uppercase tracking-widest text-white/50">
                     <tr>
                       <th className="px-6 py-4">Received</th>

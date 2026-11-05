@@ -40,15 +40,15 @@ export default function Contact() {
   };
 
   return (
-    <div className="pt-32 min-h-screen">
-      <section className="px-6 py-20">
+    <div className="pt-24 sm:pt-32 min-h-screen">
+      <section className="px-5 sm:px-6 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto">
           <SectionHeader 
             subtitle="Get In Touch"
             title="We're Here to Help Your Journey"
           />
           
-          <div className="grid lg:grid-cols-3 gap-12 mb-20">
+          <div className="grid md:grid-cols-3 gap-5 sm:gap-6 lg:gap-12 mb-16 md:mb-20">
             <GlassCard className="text-center">
               <div className="w-16 h-16 rounded-2xl bg-gold-primary/10 flex items-center justify-center mx-auto mb-6">
                 <Phone className="text-gold-primary w-8 h-8" />
@@ -77,8 +77,8 @@ export default function Contact() {
             </GlassCard>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-16">
-            <div className="glass-card p-8 md:p-12">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+            <div className="glass-card p-6 sm:p-8 md:p-12">
               <h3 className="text-3xl font-display font-bold mb-8">Send Us a Message</h3>
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid md:grid-cols-2 gap-6">

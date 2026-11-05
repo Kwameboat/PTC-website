@@ -5,15 +5,15 @@ import { Button, SectionHeader, GlassCard } from '../components/UI';
 
 export default function Recruitment() {
   return (
-    <div className="pt-32 min-h-screen">
-      <section className="px-6 py-20">
+    <div className="pt-24 sm:pt-32 min-h-screen">
+      <section className="px-5 sm:px-6 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto">
           <SectionHeader 
             subtitle="Global Talent Sourcing"
             title="International Recruitment Services"
           />
           
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-16 md:mb-20">
             <div>
               <p className="text-white/60 text-lg leading-relaxed mb-8">
                 Princess Travel Consult is your premier partner for international recruitment. We specialize in connecting Ghanaian professionals with top-tier employers across the globe. Our rigorous selection process ensures that we only present the most qualified candidates to our partners.
@@ -43,7 +43,7 @@ export default function Recruitment() {
                 className="rounded-[2rem] shadow-2xl"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute -bottom-10 -left-10 glass-card p-8 max-w-xs">
+              <div className="absolute -bottom-10 left-4 right-4 sm:right-auto sm:-left-6 lg:-left-10 glass-card bg-deep-black/70! p-6 sm:p-8 sm:max-w-xs">
                 <Award className="text-gold-primary w-12 h-12 mb-4" />
                 <h4 className="text-2xl font-bold mb-2">Certified Agency</h4>
                 <p className="text-white/50 text-sm">Recognized by international labor organizations for ethical recruitment practices.</p>
@@ -69,7 +69,7 @@ export default function Recruitment() {
 
       <section className="section-padding bg-charcoal/50">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-display font-bold mb-8">Ready to Hire Ghanaian Talent?</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-6 md:mb-8">Ready to Hire Ghanaian Talent?</h2>
           <p className="text-white/60 text-xl max-w-2xl mx-auto mb-12">
             Partner with us to access a pool of skilled, motivated, and culturally adaptable professionals ready to contribute to your organization's success.
           </p>

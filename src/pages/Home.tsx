@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { 
   Globe, 
   Briefcase, 
@@ -16,7 +17,7 @@ import { FutureBridge3D } from '../components/FutureBridge3D';
 
 const StatsSection = () => (
   <section className="section-padding bg-charcoal">
-    <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
+    <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 md:gap-12">
       {[
         { label: "Placements", value: "500+" },
         { label: "Countries", value: "12+" },
@@ -48,7 +49,7 @@ const ServicesSection = () => (
         title="World-Class Recruitment & Global Mobility"
       />
       
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
         {[
           {
             icon: Briefcase,
@@ -70,7 +71,7 @@ const ServicesSection = () => (
             <service.icon className="text-gold-primary w-12 h-12 mb-6" />
             <h3 className="text-2xl font-bold mb-4">{service.title}</h3>
             <p className="text-white/60 leading-relaxed mb-6">{service.desc}</p>
-            <a href="#" className="inline-flex items-center text-gold-primary font-bold group">
+            <a href="#" className="inline-flex items-center py-2 text-gold-primary font-bold group">
               Learn More <ArrowUpRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
             </a>
           </GlassCard>
@@ -83,12 +84,12 @@ const ServicesSection = () => (
 const JobsSection = () => (
   <section className="section-padding bg-charcoal/50">
     <div className="max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-end mb-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12">
         <SectionHeader 
           subtitle="Opportunities"
           title="Featured Global Openings"
         />
-        <Button variant="outline" className="mb-12">View All Jobs</Button>
+        <Link to="/jobs" className="shrink-0 -mt-4 md:mt-0 md:mb-12"><Button variant="outline" className="whitespace-nowrap">View All Jobs</Button></Link>
       </div>
 
       <div className="space-y-4">
@@ -103,23 +104,23 @@ const JobsSection = () => (
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            className="glass-card p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/10 cursor-pointer"
+            className="glass-card p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/10 cursor-pointer"
           >
-            <div className="flex items-center gap-6">
-              <div className="w-12 h-12 rounded-full bg-gold-primary/20 flex items-center justify-center">
+            <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+              <div className="shrink-0 w-12 h-12 rounded-full bg-gold-primary/20 flex items-center justify-center">
                 <Building2 className="text-gold-primary w-6 h-6" />
               </div>
               <div>
                 <h4 className="text-xl font-bold">{job.title}</h4>
-                <div className="flex items-center gap-4 mt-1 text-sm text-white/50">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-white/50">
                   <span className="flex items-center gap-1"><MapPin size={14} /> {job.country}</span>
                   <span className="flex items-center gap-1"><Briefcase size={14} /> {job.industry}</span>
                 </div>
               </div>
             </div>
-            <div className="mt-4 md:mt-0 flex items-center gap-6">
+            <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
               <span className="text-gold-primary font-medium">{job.type}</span>
-              <Button size="sm">Apply Now</Button>
+              <Link to="/contact"><Button size="sm" className="whitespace-nowrap">Apply Now</Button></Link>
             </div>
           </motion.div>
         ))}
@@ -135,7 +136,7 @@ export default function Home() {
       <StatsSection />
       
       <section className="section-padding">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
           <div className="lg:w-1/2">
             <SectionHeader 
               subtitle="The Bridge to Your Future"
@@ -159,7 +160,7 @@ export default function Home() {
             </ul>
             <Button size="lg">Our Story</Button>
           </div>
-          <div className="w-full lg:w-1/2 lg:self-stretch relative min-h-[500px] flex items-center justify-center">
+          <div className="w-full lg:w-1/2 lg:self-stretch relative min-h-[360px] sm:min-h-[460px] lg:min-h-[500px] flex items-center justify-center">
             <React.Suspense fallback={<div className="w-64 h-64 rounded-full border-2 border-gold-primary/20 animate-pulse" />}>
               <FutureBridge3D />
             </React.Suspense>
@@ -173,17 +174,17 @@ export default function Home() {
       {/* CTA Section */}
       <section className="section-padding">
         <div className="max-w-7xl mx-auto">
-          <div className="gold-gradient p-12 md:p-20 rounded-[2rem] text-deep-black text-center relative overflow-hidden">
+          <div className="gold-gradient px-6 py-12 sm:p-12 lg:p-20 rounded-[1.5rem] sm:rounded-[2rem] text-deep-black text-center relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
               <Globe className="w-[800px] h-[800px] absolute -top-1/2 -left-1/4" />
             </div>
-            <h2 className="text-4xl md:text-6xl font-display font-bold mb-8 relative z-10">Ready to Start Your Global Journey?</h2>
-            <p className="text-xl mb-12 max-w-2xl mx-auto font-medium relative z-10">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold mb-6 md:mb-8 relative z-10">Ready to Start Your Global Journey?</h2>
+            <p className="text-base sm:text-lg md:text-xl mb-8 md:mb-12 max-w-2xl mx-auto font-medium relative z-10">
               Whether you are a job seeker looking for overseas opportunities or an employer seeking top-tier talent, we are your best partner.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-              <Button variant="secondary" size="lg" className="bg-deep-black text-white hover:bg-deep-black/90">Apply as Candidate</Button>
-              <Button variant="outline" size="lg" className="border-deep-black text-deep-black hover:bg-deep-black hover:text-white">Hire Global Talent</Button>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 justify-center relative z-10">
+              <Link to="/contact" className="sm:w-auto"><Button variant="secondary" size="lg" className="w-full sm:w-auto whitespace-nowrap bg-deep-black! text-white! hover:bg-deep-black/85!">Apply as Candidate</Button></Link>
+              <Link to="/contact" className="sm:w-auto"><Button variant="outline" size="lg" className="w-full sm:w-auto whitespace-nowrap border-deep-black! text-deep-black! hover:bg-deep-black! hover:text-white!">Hire Global Talent</Button></Link>
             </div>
           </div>
         </div>

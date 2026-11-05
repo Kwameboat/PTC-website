@@ -65,10 +65,10 @@ export const HeroSlider = () => {
     setProgress(0);
   };
 
-  if (slides.length === 0 || !slides[current]) return <div className="h-screen bg-deep-black" />;
+  if (slides.length === 0 || !slides[current]) return <div className="min-h-[100svh] lg:h-screen bg-deep-black" />;
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-deep-black">
+    <div className="relative w-full overflow-hidden bg-deep-black min-h-[100svh] lg:min-h-[640px] lg:h-screen">
       <AnimatePresence mode="wait">
         <motion.div
           key={slides[current].id}
@@ -76,7 +76,7 @@ export const HeroSlider = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="absolute inset-0"
+          className="relative min-h-[100svh] lg:absolute lg:inset-0 lg:min-h-0"
         >
           {/* Parallax Video Background */}
           <motion.div 
@@ -101,7 +101,7 @@ export const HeroSlider = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-deep-black/60 via-transparent to-transparent" />
           
           {/* Content Container */}
-          <div className="relative z-20 h-full flex flex-col lg:flex-row items-center justify-center px-6 max-w-7xl mx-auto gap-12">
+          <div className="relative z-20 min-h-[100svh] lg:min-h-0 lg:h-full flex flex-col lg:flex-row items-center justify-center px-5 sm:px-6 pt-28 sm:pt-32 pb-28 md:pb-36 lg:py-0 max-w-7xl mx-auto gap-6 sm:gap-8 lg:gap-12">
             <motion.div
               initial="hidden"
               animate="visible"
@@ -115,9 +115,9 @@ export const HeroSlider = () => {
                   hidden: { y: 20, opacity: 0 },
                   visible: { y: 0, opacity: 1 }
                 }}
-                className="flex items-center gap-4 mb-8 bg-gold-primary/10 px-6 py-3 rounded-full border border-gold-primary/20"
+                className="flex items-center gap-4 mb-6 md:mb-8 bg-gold-primary/10 px-4 py-2 sm:px-6 sm:py-3 rounded-full border border-gold-primary/20"
               >
-                <span className="text-gold-primary uppercase tracking-[0.4em] text-xs md:text-sm font-bold">
+                <span className="text-gold-primary uppercase tracking-[0.25em] sm:tracking-[0.4em] text-[10px] sm:text-xs md:text-sm font-bold">
                   Princess Travel Consult
                 </span>
               </motion.div>
@@ -128,7 +128,7 @@ export const HeroSlider = () => {
                   visible: { y: 0, opacity: 1, filter: "blur(0px)" }
                 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-8 leading-[0.9] tracking-tighter"
+                className="text-[2.75rem] sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold mb-5 md:mb-8 leading-[0.95] lg:leading-[0.9] tracking-tighter"
               >
                 {slides[current].title.split(' ').map((word, i) => (
                   <span key={i} className={i % 2 === 1 ? 'gold-text-gradient' : ''}>
@@ -142,7 +142,7 @@ export const HeroSlider = () => {
                   hidden: { y: 20, opacity: 0 },
                   visible: { y: 0, opacity: 1 }
                 }}
-                className="text-lg md:text-xl text-white/60 max-w-xl mb-12 font-light leading-relaxed"
+                className="text-base sm:text-lg md:text-xl text-white/60 max-w-xl mb-8 md:mb-12 font-light leading-relaxed"
               >
                 {slides[current].subtitle}
               </motion.p>
@@ -152,12 +152,12 @@ export const HeroSlider = () => {
                   hidden: { y: 20, opacity: 0 },
                   visible: { y: 0, opacity: 1 }
                 }}
-                className="flex flex-col sm:flex-row gap-6"
+                className="flex flex-col sm:flex-row gap-3 sm:gap-6 w-full sm:w-auto max-w-sm sm:max-w-none"
               >
-                <Button size="lg" icon={ArrowRight} className="min-w-[200px]">
+                <Button size="lg" icon={ArrowRight} className="w-full sm:w-auto sm:min-w-[200px]">
                   {slides[current].cta_text}
                 </Button>
-                <Button variant="outline" size="lg" className="min-w-[200px] backdrop-blur-md">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto sm:min-w-[200px] backdrop-blur-md">
                   Recruit Talent
                 </Button>
               </motion.div>
@@ -168,7 +168,7 @@ export const HeroSlider = () => {
               initial={{ opacity: 0, scale: 0.8, x: 50 }}
               animate={{ opacity: 1, scale: 1, x: 0 }}
               transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-              className="flex-1 w-full h-[400px] lg:h-[600px] relative"
+              className="lg:flex-1 w-full h-[220px] sm:h-[320px] md:h-[380px] lg:h-[600px] relative shrink-0"
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-full h-full max-w-[500px] max-h-[500px]">
@@ -216,27 +216,29 @@ export const HeroSlider = () => {
       </AnimatePresence>
 
       {/* Interactive Navigation & Progress */}
-      <div className="absolute bottom-12 left-0 w-full px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-8 z-30">
-        <div className="flex items-center gap-6">
+      <div className="absolute bottom-5 md:bottom-10 left-0 w-full pl-5 pr-24 md:px-12 md:pr-32 flex flex-row items-center justify-between gap-4 z-30">
+        <div className="flex items-center gap-3 sm:gap-6">
           <button 
             onClick={() => setIsPlaying(!isPlaying)}
-            className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-gold-primary hover:border-gold-primary hover:text-deep-black transition-all group"
+            className="shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-gold-primary hover:border-gold-primary hover:text-deep-black transition-all group"
+            aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
           >
             {isPlaying ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
           </button>
           
-          <div className="flex gap-4">
+          <div className="flex gap-2 sm:gap-4">
             {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goToSlide(i)}
                 className="group relative py-4"
+                aria-label={`Show slide ${i + 1}`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <span className={`text-[10px] font-bold transition-colors ${i === current ? 'text-gold-primary' : 'text-white/30'}`}>
                     0{i + 1}
                   </span>
-                  <div className="h-[2px] w-12 md:w-20 bg-white/10 relative overflow-hidden">
+                  <div className="h-[2px] w-8 sm:w-12 md:w-20 bg-white/10 relative overflow-hidden">
                     {i === current && (
                       <motion.div 
                         className="absolute inset-0 bg-gold-primary origin-left"
@@ -251,15 +253,17 @@ export const HeroSlider = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <button 
             onClick={prev}
+            aria-label="Previous slide"
             className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition-all"
           >
             <ChevronLeft size={24} />
           </button>
           <button 
             onClick={next}
+            aria-label="Next slide"
             className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition-all"
           >
             <ChevronRight size={24} />

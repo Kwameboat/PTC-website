@@ -4,18 +4,18 @@ import { Button, SectionHeader, GlassCard } from '../components/UI';
 
 export default function Travel() {
   return (
-    <div className="pt-32 min-h-screen">
-      <section className="px-6 py-20">
+    <div className="pt-24 sm:pt-32 min-h-screen">
+      <section className="px-5 sm:px-6 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto">
           <SectionHeader 
             subtitle="Seamless Journeys"
             title="Global Mobility & Travel Advisory"
           />
           
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-16 md:mb-20">
             <div className="order-2 lg:order-1">
               <img 
-                src="https://images.unsplash.com/photo-1436491865332-7a61a109c0f2?auto=format&fit=crop&q=80&w=800" 
+                src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&q=80&w=800" 
                 alt="Travel Advisory" 
                 className="rounded-[2rem] shadow-2xl"
                 referrerPolicy="no-referrer"
@@ -42,7 +42,7 @@ export default function Travel() {
             </div>
           </div>
 
-          <div className="bg-gold-primary/5 rounded-[2rem] p-12 md:p-20">
+          <div className="bg-gold-primary/5 rounded-[1.5rem] sm:rounded-[2rem] px-6 py-10 sm:p-12 md:p-20">
             <div className="max-w-3xl mx-auto text-center">
               <h3 className="text-3xl md:text-4xl font-display font-bold mb-6">Our Relocation Process</h3>
               <div className="space-y-8 text-left mt-12">
@@ -68,7 +68,7 @@ export default function Travel() {
 
       <section className="section-padding">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-display font-bold mb-8">Need Travel Advice?</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-6 md:mb-8">Need Travel Advice?</h2>
           <p className="text-white/60 text-xl max-w-2xl mx-auto mb-12">
             Whether you're traveling for work, study, or leisure, our experts are ready to help you navigate the complexities of international travel.
           </p>

@@ -13,6 +13,11 @@
 }
 
 @layer base {
+  /* Safety net: decorative glows/blobs must never cause sideways scrolling on phones */
+  html, body {
+    overflow-x: clip;
+  }
+
   body {
     @apply bg-deep-black text-white font-sans antialiased;
   }
@@ -36,7 +41,7 @@
 }
 
 .section-padding {
-  @apply py-20 px-6 md:px-12 lg:px-24;
+  @apply py-16 md:py-20 px-5 sm:px-6 md:px-12 lg:px-24;
 }
 
 .vertical-text {

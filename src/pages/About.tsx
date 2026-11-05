@@ -4,15 +4,15 @@ import { SectionHeader, GlassCard } from '../components/UI';
 
 export default function About() {
   return (
-    <div className="pt-32 min-h-screen">
-      <section className="px-6 py-20">
+    <div className="pt-24 sm:pt-32 min-h-screen">
+      <section className="px-5 sm:px-6 py-12 sm:py-20">
         <div className="max-w-7xl mx-auto">
           <SectionHeader 
             subtitle="Our Story"
             title="Bridging the Gap Between Talent & Opportunity"
           />
           
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-16 md:mb-20">
             <div>
               <p className="text-white/60 text-lg leading-relaxed mb-6">
                 Princess Travel Consult was founded with a clear mission: to empower Ghanaian professionals by connecting them with life-changing career opportunities on the global stage. We recognized the immense talent within our borders and the growing demand for skilled labor worldwide.
@@ -39,13 +39,13 @@ export default function About() {
                 className="rounded-[2rem] shadow-2xl"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute -top-10 -right-10 w-40 h-40 gold-gradient rounded-full flex items-center justify-center p-4 text-center">
-                <span className="text-deep-black font-bold leading-tight">Accra's Most Trusted Agency</span>
+              <div className="absolute -top-6 -right-2 sm:-top-10 sm:-right-6 lg:-right-10 w-28 h-28 sm:w-40 sm:h-40 gold-gradient rounded-full flex items-center justify-center p-3 sm:p-4 text-center shadow-xl">
+                <span className="text-deep-black font-bold leading-tight text-sm sm:text-base">Accra's Most Trusted Agency</span>
               </div>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="grid md:grid-cols-3 gap-5 sm:gap-8 mb-16 md:mb-20">
             {[
               { icon: ShieldCheck, title: "Our Mission", desc: "To provide ethical, transparent, and efficient recruitment and travel services that transform lives." },
               { icon: Globe, title: "Our Vision", desc: "To be the leading bridge between African talent and the global workforce, recognized for excellence." },
@@ -59,8 +59,8 @@ export default function About() {
             ))}
           </div>
 
-          <div className="bg-charcoal/50 rounded-[2rem] p-12 md:p-20">
-            <h3 className="text-3xl md:text-4xl font-display font-bold mb-12 text-center">Why Choose Us?</h3>
+          <div className="bg-charcoal/50 rounded-[1.5rem] sm:rounded-[2rem] px-6 py-10 sm:p-12 md:p-20">
+            <h3 className="text-3xl md:text-4xl font-display font-bold mb-8 md:mb-12 text-center">Why Choose Us?</h3>
             <div className="grid md:grid-cols-2 gap-12">
               {[
                 { title: "Expert Knowledge", desc: "Our team has deep expertise in international labor laws, visa requirements, and recruitment trends." },

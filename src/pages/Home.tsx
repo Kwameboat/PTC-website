@@ -159,7 +159,7 @@ export default function Home() {
             </ul>
             <Button size="lg">Our Story</Button>
           </div>
-          <div className="lg:w-1/2 relative min-h-[500px] flex items-center justify-center">
+          <div className="w-full lg:w-1/2 lg:self-stretch relative min-h-[500px] flex items-center justify-center">
             <React.Suspense fallback={<div className="w-64 h-64 rounded-full border-2 border-gold-primary/20 animate-pulse" />}>
               <FutureBridge3D />
             </React.Suspense>

@@ -7,8 +7,8 @@ const ParticleField = ({ count = 1000 }) => {
   const points = useMemo(() => {
     const p = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      p[i * 3] = (Math.random() - 0.5) * 10;
-      p[i * 3 + 1] = (Math.random() - 0.5) * 10;
+      p[i * 3] = (Math.random() - 0.5) * 12;
+      p[i * 3 + 1] = (Math.random() - 0.5) * 14;
       p[i * 3 + 2] = (Math.random() - 0.5) * 10;
     }
     return p;
@@ -94,7 +94,7 @@ const AbstractCore = () => {
 
 export const FutureBridge3D = () => {
   return (
-    <div className="w-full h-full min-h-[400px]">
+    <div className="absolute inset-0">
       <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
         <color attach="background" args={['#0a0a0a']} />
         <ambientLight intensity={0.2} />
@@ -103,7 +103,7 @@ export const FutureBridge3D = () => {
         
         <Suspense fallback={null}>
           <AbstractCore />
-          <ParticleField count={2000} />
+          <ParticleField count={3500} />
           <Stars radius={50} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
         </Suspense>
       </Canvas>

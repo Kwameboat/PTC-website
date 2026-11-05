@@ -16,9 +16,12 @@ export const Navbar = () => {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-deep-black/80 backdrop-blur-md py-4' : 'bg-transparent py-8'}`}>
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <Link to="/" className="flex flex-col group">
+        <Link to="/" className="flex items-center gap-3 group" aria-label="Princess Travel Consult home">
+          <img src="/logo-mark-160.png" alt="" width={48} height={48} className={`rounded-full shadow-lg shadow-gold-primary/10 transition-all duration-500 ${scrolled ? 'w-10 h-10' : 'w-12 h-12'}`} />
+          <span className="flex flex-col">
           <span className="text-xl font-display font-bold tracking-tighter leading-none group-hover:text-gold-primary transition-colors">PRINCESS</span>
           <span className="text-xs font-bold tracking-[0.3em] text-gold-primary leading-none shimmer-text">TRAVEL CONSULT</span>
+          </span>
         </Link>
         
         <div className="hidden md:flex items-center gap-8 text-sm font-medium uppercase tracking-widest">
@@ -42,9 +45,12 @@ export const Footer = () => (
     <div className="max-w-7xl mx-auto px-6">
       <div className="grid md:grid-cols-4 gap-12 mb-20">
         <div className="col-span-2">
-          <Link to="/" className="flex flex-col mb-6 group">
+          <Link to="/" className="flex items-center gap-4 mb-6 group" aria-label="Princess Travel Consult home">
+            <img src="/logo-mark-160.png" alt="" width={64} height={64} className="w-16 h-16 rounded-full" />
+            <span className="flex flex-col">
             <span className="text-xl font-display font-bold tracking-tighter leading-none group-hover:text-gold-primary transition-colors">PRINCESS</span>
             <span className="text-xs font-bold tracking-[0.3em] text-gold-primary leading-none shimmer-text">TRAVEL CONSULT</span>
+            </span>
           </Link>
           <p className="text-white/50 max-w-md leading-relaxed mb-8">
             Your best partner in international recruitment. We bridge the gap between Ghanaian talent and global opportunities with integrity and excellence.

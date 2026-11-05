@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 const AdminPanel = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hero');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!sessionStorage.getItem('adminToken'));
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -53,8 +53,9 @@ const AdminPanel = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({ success: false, message: 'Server unavailable' }));
     if (data.success) {
+      sessionStorage.setItem('adminToken', data.token);
       setIsLoggedIn(true);
       setError('');
     } else {
@@ -148,7 +149,7 @@ const AdminPanel = () => {
         </nav>
 
         <button 
-          onClick={() => setIsLoggedIn(false)}
+          onClick={() => { sessionStorage.removeItem('adminToken'); setIsLoggedIn(false); }}
           className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all mt-auto"
         >
           <LogOut size={18} />

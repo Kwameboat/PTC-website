@@ -1,9 +1,13 @@
-import Database from 'better-sqlite3';
+import { createClient } from '@libsql/client';
 
-const db = new Database('cms.db');
+// On Vercel, TURSO_DATABASE_URL / TURSO_AUTH_TOKEN point at a hosted Turso database.
+// Locally (no env vars) it falls back to a SQLite file, cms.db.
+export const db = createClient({
+  url: process.env.TURSO_DATABASE_URL || 'file:cms.db',
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-// Initialize tables
-db.exec(`
+const SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE,
@@ -82,40 +86,62 @@ db.exec(`
     message TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
-`);
+`;
 
-// Seed initial data if empty
-const userCount = db.prepare('SELECT count(*) as count FROM users').get() as { count: number };
-if (userCount.count === 0) {
-  db.prepare('INSERT INTO users (username, password) VALUES (?, ?)').run('admin', 'admin123'); // In a real app, hash this
-}
-
-const slideCount = db.prepare('SELECT count(*) as count FROM hero_slides').get() as { count: number };
-if (slideCount.count === 0) {
-  db.prepare('INSERT INTO hero_slides (title, subtitle, video_url, cta_text, cta_link, order_index) VALUES (?, ?, ?, ?, ?, ?)').run(
+const SEED_SLIDES = [
+  [
     'Global Talent, Global Reach',
     'Your Best Partner in International Recruitment. Connecting Ghanaian excellence with world-class opportunities in Europe and North America.',
     'https://assets.mixkit.co/videos/preview/mixkit-business-people-walking-in-a-modern-office-4334-large.mp4',
     'Apply Now',
     '/apply',
-    1
-  );
-  db.prepare('INSERT INTO hero_slides (title, subtitle, video_url, cta_text, cta_link, order_index) VALUES (?, ?, ?, ?, ?, ?)').run(
+    1,
+  ],
+  [
     'Seamless Global Mobility',
     'Expert travel consultancy and visa support for your international journey. We handle the complexity, you focus on your future.',
     'https://assets.mixkit.co/videos/preview/mixkit-airport-terminal-with-people-walking-1574-large.mp4',
     'Explore Services',
     '/services',
-    2
-  );
-  db.prepare('INSERT INTO hero_slides (title, subtitle, video_url, cta_text, cta_link, order_index) VALUES (?, ?, ?, ?, ?, ?)').run(
+    2,
+  ],
+  [
     'Recruit Top-Tier Talent',
     'Helping global employers source, screen, and prepare qualified candidates from Ghana. Quality talent, ready for the world.',
     'https://assets.mixkit.co/videos/preview/mixkit-group-of-business-people-working-in-the-office-4336-large.mp4',
     'Hire Talent',
     '/recruit',
-    3
-  );
+    3,
+  ],
+];
+
+async function init() {
+  await db.executeMultiple(SCHEMA);
+
+  const users = await db.execute('SELECT count(*) AS count FROM users');
+  if (Number(users.rows[0].count) === 0) {
+    await db.execute({
+      sql: 'INSERT INTO users (username, password) VALUES (?, ?)',
+      args: [process.env.ADMIN_USERNAME || 'admin', process.env.ADMIN_PASSWORD || 'admin123'],
+    });
+  }
+
+  const slides = await db.execute('SELECT count(*) AS count FROM hero_slides');
+  if (Number(slides.rows[0].count) === 0) {
+    await db.batch(
+      SEED_SLIDES.map((args) => ({
+        sql: 'INSERT INTO hero_slides (title, subtitle, video_url, cta_text, cta_link, order_index) VALUES (?, ?, ?, ?, ?, ?)',
+        args,
+      })),
+      'write',
+    );
+  }
 }
 
-export default db;
+let ready = null;
+
+/** Creates tables and seed data once per process; call before any query. */
+export function ensureDb() {
+  if (!ready) ready = init().catch((err) => { ready = null; throw err; });
+  return ready;
+}

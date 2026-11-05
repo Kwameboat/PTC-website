@@ -22,8 +22,9 @@ export const HeroSlider = () => {
 
   useEffect(() => {
     fetch('/api/content/hero')
-      .then(res => res.json())
-      .then(data => setSlides(data));
+      .then(res => (res.ok ? res.json() : []))
+      .then(data => setSlides(Array.isArray(data) ? data : []))
+      .catch(() => setSlides([]));
   }, []);
 
   useEffect(() => {

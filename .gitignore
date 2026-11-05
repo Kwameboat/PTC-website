@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local SQLite database used when TURSO_DATABASE_URL is not set
+cms.db*

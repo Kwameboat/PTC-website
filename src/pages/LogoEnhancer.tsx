@@ -47,14 +47,17 @@ export default function LogoEnhancer() {
     try {
       const response = await fetch('/api/admin/save-logo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sessionStorage.getItem('adminToken') ?? ''}`,
+        },
         body: JSON.stringify({ image: generatedImage }),
       });
 
       if (response.ok) {
         setStatus('success');
       } else {
-        throw new Error("Failed to save logo to server");
+        throw new Error(response.status === 401 ? "Please sign in to the admin panel first" : "Failed to save logo to server");
       }
     } catch (err: any) {
       setError(err.message);

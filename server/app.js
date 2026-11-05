@@ -2,11 +2,34 @@ import express from "express";
 import crypto from "crypto";
 import { db, ensureDb } from "./db.js";
 
-// Shared by server.ts (local dev / `npm start`) and api/index.ts (Vercel function).
+// Shared by server.ts (local dev / `npm start`) and api/index.js (Vercel function).
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 
 app.get("/health", (_req, res) => res.send("OK"));
+
+// Database health check: reports the error code (never secrets) so setup problems are visible.
+app.get("/api/health", async (_req, res) => {
+  const configured = {
+    TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL
+      ? process.env.TURSO_DATABASE_URL.split("://")[0] + "://…"
+      : "missing",
+    TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN ? "set" : "missing",
+    ADMIN_SECRET: process.env.ADMIN_SECRET ? "set" : "missing",
+  };
+  try {
+    await ensureDb();
+    await db.execute("SELECT 1");
+    res.json({ db: "ok", configured });
+  } catch (err) {
+    res.status(500).json({
+      db: "error",
+      code: err?.code ?? err?.name ?? "unknown",
+      message: String(err?.message ?? err).replace(/\b[\w+.-]+:\/\/\S+/g, "<url>").slice(0, 200),
+      configured,
+    });
+  }
+});
 
 // Make sure tables exist before any /api request touches the database.
 app.use("/api", (_req, _res, next) => {
